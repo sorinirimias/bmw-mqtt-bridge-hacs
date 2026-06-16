@@ -1,0 +1,14 @@
+{
+  "domain": "bmw_cardata",
+  "name": "BMW CarData",
+  "codeowners": [
+    "@sorinirimias"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/sorinirimias/bmw-mqtt-bridge-hacs",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/sorinirimias/bmw-mqtt-bridge-hacs/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

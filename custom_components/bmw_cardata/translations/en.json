@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "BMW CarData",
+        "description": "Enter your BMW CarData credentials. You can find both on the BMW CarData portal in your My BMW account (the GCID is shown as the MQTT username).",
+        "data": {
+          "client_id": "Client ID",
+          "gcid": "GCID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate BMW CarData",
+        "description": "Your BMW session expired. Continue to log in again with your BMW account."
+      }
+    },
+    "progress": {
+      "wait_for_login": "Open the following URL in your browser and sign in to your BMW account, then this step finishes automatically:\n\n{url}"
+    },
+    "abort": {
+      "already_configured": "This BMW account (GCID) is already configured.",
+      "cannot_connect": "Could not reach BMW to start the login. Check your Client ID and try again.",
+      "auth_failed": "BMW login did not complete. Please start over and finish the login in your browser.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  }
+}
