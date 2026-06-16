@@ -1,5 +1,5 @@
 {
-  "name": "BMW CarData",
+  "name": "BMW CarData MQTT Bridge",
   "homeassistant": "2024.10.0",
   "render_readme": true
 }

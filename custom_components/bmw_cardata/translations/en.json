@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "BMW CarData",
+        "title": "BMW CarData MQTT Bridge",
         "description": "Enter your BMW CarData credentials. You can find both on the BMW CarData portal in your My BMW account (the GCID is shown as the MQTT username).",
         "data": {
           "client_id": "Client ID",

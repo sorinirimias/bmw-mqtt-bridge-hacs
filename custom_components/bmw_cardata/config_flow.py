@@ -121,7 +121,7 @@ class BmwCarDataConfigFlow(ConfigFlow, domain=DOMAIN):
 
         self._abort_if_unique_id_configured()
         return self.async_create_entry(
-            title=f"BMW CarData ({self._gcid[:8]})",
+            title=f"BMW CarData MQTT ({self._gcid[:8]})",
             data={
                 CONF_CLIENT_ID: self._client_id,
                 CONF_GCID: self._gcid,

@@ -169,12 +169,16 @@ class BmwCarDataRuntime:
 
     # paho callbacks (VERSION2 signatures; tolerate VERSION1 via *args)
     def _on_connect(self, client, _userdata, _flags, reason_code, *args) -> None:
-        rc = int(reason_code) if reason_code is not None else 0
-        if rc == 0:
+        # paho 2.x passes a ReasonCode object; paho 1.x passes an int.
+        is_failure = getattr(reason_code, "is_failure", None)
+        if is_failure is None:
+            is_failure = bool(reason_code)
+        rc_display = getattr(reason_code, "value", reason_code)
+        if not is_failure:
             client.subscribe(f"{self.gcid}/+", qos=1)
             _LOGGER.info("Connected to BMW CarData stream")
         else:
-            _LOGGER.warning("BMW CarData connect failed: reason_code=%s", rc)
+            _LOGGER.warning("BMW CarData connect failed: reason_code=%s", rc_display)
 
     def _on_disconnect(self, _client, _userdata, *args) -> None:
         _LOGGER.info("Disconnected from BMW CarData stream")
