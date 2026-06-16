@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-DOMAIN = "bmw_cardata"
+DOMAIN = "bmw_cardata_mqtt"
 
 # Config entry keys
 CONF_CLIENT_ID = "client_id"

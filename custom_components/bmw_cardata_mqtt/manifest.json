@@ -1,5 +1,5 @@
 {
-  "domain": "bmw_cardata",
+  "domain": "bmw_cardata_mqtt",
   "name": "BMW CarData MQTT Bridge",
   "codeowners": [
     "@sorinirimias"
