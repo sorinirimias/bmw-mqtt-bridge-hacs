@@ -23,5 +23,17 @@
       "auth_failed": "BMW login did not complete. Please start over and finish the login in your browser.",
       "reauth_successful": "Re-authentication was successful."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "BMW CarData MQTT Bridge options",
+        "description": "Optionally republish BMW signals to your Home Assistant MQTT broker (requires the MQTT integration, e.g. the Mosquitto broker). Entities are always created regardless of this setting.",
+        "data": {
+          "republish_mqtt": "Republish signals to the MQTT broker",
+          "mqtt_prefix": "MQTT topic prefix"
+        }
+      }
+    }
   }
 }

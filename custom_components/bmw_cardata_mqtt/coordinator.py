@@ -9,6 +9,7 @@ from typing import Any
 
 import paho.mqtt.client as mqtt
 
+from homeassistant.components import mqtt as ha_mqtt
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -26,7 +27,10 @@ from .const import (
     BMW_STREAM_PORT,
     CONF_CLIENT_ID,
     CONF_GCID,
+    CONF_MQTT_PREFIX,
     CONF_REFRESH_TOKEN,
+    CONF_REPUBLISH,
+    DEFAULT_MQTT_PREFIX,
     SIGNAL_NEW_SIGNAL,
     TOKEN_REFRESH_MARGIN,
     TOKEN_REFRESH_MIN_DELAY,
@@ -59,6 +63,14 @@ class BmwCarDataRuntime:
         self.client_id: str = entry.data[CONF_CLIENT_ID]
         self.gcid: str = entry.data[CONF_GCID]
         self.refresh_token: str = entry.data[CONF_REFRESH_TOKEN]
+
+        # Optional republishing of BMW signals to the Home Assistant MQTT broker.
+        self.republish: bool = entry.options.get(CONF_REPUBLISH, False)
+        prefix = entry.options.get(CONF_MQTT_PREFIX, DEFAULT_MQTT_PREFIX)
+        if prefix and not prefix.endswith("/"):
+            prefix += "/"
+        self.mqtt_prefix: str = prefix or DEFAULT_MQTT_PREFIX
+        self._mqtt_warned = False
 
         self.id_token: str | None = None
         self.id_exp: int = 0
@@ -214,6 +226,9 @@ class BmwCarDataRuntime:
         veh = self.data.setdefault(vin, {})
         veh_attrs = self.attributes.setdefault(vin, {})
 
+        if self.republish:
+            self._republish(topic, payload, vin, data)
+
         for prop, obj in data.items():
             if isinstance(obj, dict) and "value" in obj:
                 value = obj["value"]
@@ -231,3 +246,36 @@ class BmwCarDataRuntime:
                 async_dispatcher_send(self.hass, SIGNAL_NEW_SIGNAL, vin, prop)
             else:
                 async_dispatcher_send(self.hass, signal_update(vin, prop))
+
+    @callback
+    def _republish(
+        self, topic: str, payload: str, vin: str, data: dict[str, Any]
+    ) -> None:
+        """Republish a BMW message to the HA MQTT broker (event-loop thread).
+
+        Mirrors the upstream bmw-mqtt-bridge: the full payload is published to
+        a legacy topic and a raw topic, and each signal value is also published
+        to a per-signal topic for easy consumption.
+        """
+        prefix = self.mqtt_prefix
+        rest = topic.split("/", 1)[1] if "/" in topic else topic
+        legacy_topic = f"{prefix}{rest}"
+        raw_topic = f"{prefix}raw/{rest}"
+
+        try:
+            ha_mqtt.async_publish(self.hass, legacy_topic, payload, 0, False)
+            ha_mqtt.async_publish(self.hass, raw_topic, payload, 0, False)
+            for prop, obj in data.items():
+                value = obj.get("value") if isinstance(obj, dict) else obj
+                signal_topic = f"{prefix}vehicles/{vin}/{prop}"
+                out = value if isinstance(value, str) else json.dumps(value)
+                ha_mqtt.async_publish(self.hass, signal_topic, out, 0, False)
+        except Exception:  # noqa: BLE001 - MQTT integration may not be set up
+            if not self._mqtt_warned:
+                self._mqtt_warned = True
+                _LOGGER.warning(
+                    "Cannot republish to MQTT: the Home Assistant MQTT "
+                    "integration is not configured. Add the MQTT integration "
+                    "(e.g. the Mosquitto broker) or disable republishing in the "
+                    "BMW CarData MQTT Bridge options."
+                )

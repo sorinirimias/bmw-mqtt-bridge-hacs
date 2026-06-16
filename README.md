@@ -44,6 +44,21 @@ folder, then restart Home Assistant.
 To switch BMW accounts or recover from a revoked token, remove and re-add the
 integration (or use the automatic **re-authentication** prompt).
 
+## Optional: republish to your MQTT broker
+
+By default this integration creates **native entities** and does **not** touch any
+MQTT broker. If you also want the raw BMW data on your own broker (e.g. for the
+`bmw/#` topics the standalone bridge produced), open the integration's
+**Configure** (options) and enable **"Republish signals to the MQTT broker"**.
+
+- Requires the Home Assistant **MQTT integration** to be configured (e.g. the
+  Mosquitto broker) — the integration reuses that broker, so you do **not**
+  re-enter host/credentials here.
+- Published topics, for prefix `bmw/` (configurable):
+  - `bmw/<rest-of-bmw-topic>` — full JSON payload (legacy/compatible topic)
+  - `bmw/raw/<rest-of-bmw-topic>` — full JSON payload (raw topic)
+  - `bmw/vehicles/<VIN>/<signal>` — one topic per signal value
+
 ## How it works
 
 | Concern | Implementation |

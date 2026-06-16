@@ -9,6 +9,11 @@ CONF_CLIENT_ID = "client_id"
 CONF_GCID = "gcid"
 CONF_REFRESH_TOKEN = "refresh_token"
 
+# Options keys
+CONF_REPUBLISH = "republish_mqtt"
+CONF_MQTT_PREFIX = "mqtt_prefix"
+DEFAULT_MQTT_PREFIX = "bmw/"
+
 # BMW OAuth2 device-authorization-grant endpoints
 OAUTH_DEVICE_CODE_URL = "https://customer.bmwgroup.com/gcdm/oauth/device/code"
 OAUTH_TOKEN_URL = "https://customer.bmwgroup.com/gcdm/oauth/token"

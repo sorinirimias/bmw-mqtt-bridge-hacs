@@ -33,8 +33,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: BmwConfigEntry) -> bool:
     entry.runtime_data = runtime
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = runtime
 
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def async_reload_entry(hass: HomeAssistant, entry: BmwConfigEntry) -> None:
+    """Reload the entry when options (e.g. republishing) change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: BmwConfigEntry) -> bool:

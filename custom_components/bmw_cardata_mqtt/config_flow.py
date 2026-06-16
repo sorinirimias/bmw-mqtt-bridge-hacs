@@ -7,7 +7,13 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .bmw_auth import (
@@ -17,7 +23,15 @@ from .bmw_auth import (
     async_request_device_code,
     generate_pkce,
 )
-from .const import CONF_CLIENT_ID, CONF_GCID, CONF_REFRESH_TOKEN, DOMAIN
+from .const import (
+    CONF_CLIENT_ID,
+    CONF_GCID,
+    CONF_MQTT_PREFIX,
+    CONF_REFRESH_TOKEN,
+    CONF_REPUBLISH,
+    DEFAULT_MQTT_PREFIX,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +47,12 @@ class BmwCarDataConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the BMW CarData device-flow setup."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        """Return the options flow for republishing settings."""
+        return BmwCarDataOptionsFlow()
 
     def __init__(self) -> None:
         """Initialize flow state."""
@@ -154,3 +174,29 @@ class BmwCarDataConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_show_form(step_id="reauth_confirm")
         self._code_verifier, self._code_challenge = generate_pkce()
         return await self.async_step_auth()
+
+
+class BmwCarDataOptionsFlow(OptionsFlow):
+    """Options: republish BMW signals to the Home Assistant MQTT broker."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage republishing options."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        options = self.config_entry.options
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_REPUBLISH,
+                    default=options.get(CONF_REPUBLISH, False),
+                ): bool,
+                vol.Required(
+                    CONF_MQTT_PREFIX,
+                    default=options.get(CONF_MQTT_PREFIX, DEFAULT_MQTT_PREFIX),
+                ): str,
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)
