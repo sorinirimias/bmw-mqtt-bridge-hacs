@@ -142,7 +142,10 @@ class BmwCarDataRuntime:
         client = _build_client(self.client_id)
         client.tls_set()  # default system / certifi CA bundle
         client.username_pw_set(self.gcid, self.id_token)
-        client.reconnect_delay_set(min_delay=1, max_delay=30)
+        # Gentle exponential backoff: BMW returns MQTT v5 reason 151 ("Quota
+        # exceeded") if we reconnect too aggressively, so start at 15s and
+        # back off up to 5 minutes rather than hammering the broker.
+        client.reconnect_delay_set(min_delay=15, max_delay=300)
         client.on_connect = self._on_connect
         client.on_message = self._on_message
         client.on_disconnect = self._on_disconnect
